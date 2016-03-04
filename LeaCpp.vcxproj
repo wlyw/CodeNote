@@ -146,11 +146,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ClassTest.h" />
     <ClInclude Include="FunTest.h" />
     <ClInclude Include="leetcode.h" />
     <ClInclude Include="StrTest.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ClassTest.cpp" />
     <ClCompile Include="ComTest.cpp" />
     <ClCompile Include="FunTest.cpp" />
     <ClCompile Include="leetcode.cpp" />

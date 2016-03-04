@@ -24,6 +24,9 @@
     <ClInclude Include="leetcode.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ClassTest.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StrTest.cpp">
@@ -39,6 +42,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="leetcode.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassTest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
