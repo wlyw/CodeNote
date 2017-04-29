@@ -4,60 +4,67 @@
 #include <string>
 #include <iostream>
 #include <functional>
-#define MAXNUM 500    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-#define NODE 1        //VOï¿½Ðµï¿½Ç©ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+#define MAXNUM 500    //¶þ²æÊ÷Êý×é×î´óÈÝÁ¿
+#define NODE 1        //VOÖÐµÄÇ©Ãû½ÚµãµÄË÷Òý
 
 using namespace std;
 
-typedef struct trnode_s      //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½ï¿½Ý½á¹¹
+typedef struct trnode_s      //¶þ²æÊ÷½ÚµãÊý¾Ý½á¹¹
 {
     int data;
-    string data_hash;
+	string data_hash;
 }trnode;
 
-typedef struct rode_path     //Â·ï¿½ï¿½ï¿½ï¿½ï¿½Ý½á¹¹
+typedef struct rode_path     //Â·¾¶Êý¾Ý½á¹¹
 {
     int nowcount;
     int index[100];
     string data_hash[100];
 }rode_path;
 
-//////////////////////È«ï¿½Ö±ï¿½ï¿½ï¿½/////////////////////////
+typedef struct VO           //VOÊý¾Ý½á¹¹
+{
+	int nowcount;
+	trnode vd[MAXNUM];
+}vo;
 
-int num;            //Ô­Ê¼ï¿½ï¿½ï¿½Ý¸ï¿½ï¿½ï¿½
-trnode tr[MAXNUM];     //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-int sj,xj;          //ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½Â½ï¿½
-rode_path lpath,rpath;   //ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½
+//////////////////////È«¾Ö±äÁ¿/////////////////////////
+
+int num;            //Ô­Ê¼Êý¾Ý¸öÊý
+trnode tr[MAXNUM];     //¶þ²æÊ÷Êý×é
+int sj,xj;          //²éÑ¯µÄÉÏÏÂ½ç
+rode_path lpath,rpath;   //×óÓÒÂ·¾¶
+vo vonode;          //vo½á¹û
 ///////////////////////////////////////////////////////
 
-//ï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½
+//¿ìÅÅº¯Êý
 int comp(const void * a,const void * b)
 {
     return *(int *)a - *(int *)b;
 }
 
-//hashï¿½ï¿½ï¿½ï¿½
-unsigned int APHash(char *str)
+//hashº¯Êý
+unsigned int APHash(string str)
 {
     unsigned int hash = 0;
     int i;
 
-    for(i=0;*str;i++)
+    for(i=0;str[i];i++)
     {
         if((i & 1) == 0)
         {
-            hash^=((hash << 7)^(*str++)^(hash >> 3));
+            hash^=((hash << 7)^(str[i])^(hash >> 3));
         }
         else
         {
-            hash^=(~((hash << 11)^(*str++)^(hash >> 5)));
+            hash^=(~((hash << 11)^(str[i])^(hash >> 5)));
         }
     }
 
     return (hash & 0x7FFFFFFF);
 }
 
-//hashï¿½ï¿½ï¿½ï¿½
+//hashº¯Êý
 string hashdata(int data)
 {
     char b[100];
@@ -77,11 +84,15 @@ void crtree(int n)
     {
         tr[i].data_hash=tr[i*2].data_hash;
         tr[i].data_hash += tr[i*2+1].data_hash;
+		int n=APHash(tr[i].data_hash.c_str());
+		char re[100];
+		itoa(n,re,10);
+		tr[i].data_hash=re;
     }
     crtree(n/2);
 }
 
-//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½Ý½ï¿½ï¿½ï¿½
+//Êä³ö²éÑ¯µÄÊý¾Ý½á¹û
 void print(int down,int up)
 {
     bool flag=false;
@@ -92,9 +103,27 @@ void print(int down,int up)
             sj=i-1;
             return;
         }
+		if(tr[i].data==up)
+        {
+            sj=i;
+            return;
+        }
         if(tr[i].data>down)
         {
             printf("%d ",tr[i].data);
+			//Ìî³ävonode
+			vonode.vd[vonode.nowcount].data=i;    //vonodeÖÐµÄdata±£´æµÄÎªË÷ÒýÖµ
+			vonode.vd[vonode.nowcount].data_hash=tr[i].data_hash;
+			vonode.nowcount++;
+
+            if(!flag)
+            {
+                xj=i;
+                flag=true;
+            }
+        }
+		if(tr[i].data==down)
+        {
             if(!flag)
             {
                 xj=i;
@@ -102,86 +131,128 @@ void print(int down,int up)
             }
         }
     }
+	if(sj==0)
+		sj=num*2-1;
     return;
 }
 
-//ï¿½ï¿½ï¿½ß½ï¿½ï¿½ï¿½Â·ï¿½ï¿½
+//×ó±ß½çµÄÂ·¾¶
 void leftbr(int x_xj)
 {
     if(x_xj==NODE)
         return;
     if(x_xj%2!=0)
     {
-        lpath.index[lpath.nowcount]=x_xj;
-        lpath.data_hash[lpath.nowcount]=tr[x_xj].data_hash;
+        lpath.index[lpath.nowcount]=x_xj-1;
+        lpath.data_hash[lpath.nowcount]=tr[x_xj-1].data_hash;
         lpath.nowcount++;
+
+		//Ìî³ävonode
+		vonode.vd[vonode.nowcount].data=x_xj-1;    
+		vonode.vd[vonode.nowcount].data_hash=tr[x_xj-1].data_hash;
+		vonode.nowcount++;
+
         leftbr((x_xj-1)/2);
     }
     else leftbr(x_xj/2);
     return;
 }
 
-//ï¿½Ò±ß½ï¿½ï¿½ï¿½Â·ï¿½ï¿½
+//ÓÒ±ß½çµÄÂ·¾¶
 void rightbr(int x_xj)
 {
     if(x_xj==NODE)
         return;
     if(x_xj%2==0)
     {
-        rpath.index[rpath.nowcount]=x_xj;
-        rpath.data_hash[rpath.nowcount]=tr[x_xj].data_hash;
+        rpath.index[rpath.nowcount]=x_xj+1;
+        rpath.data_hash[rpath.nowcount]=tr[x_xj+1].data_hash;
         rpath.nowcount++;
+
+		//Ìî³ävonode
+		vonode.vd[vonode.nowcount].data=x_xj+1;    
+		vonode.vd[vonode.nowcount].data_hash=tr[x_xj+1].data_hash;
+		vonode.nowcount++;
+
         rightbr(x_xj/2);
     }
-    else leftbr((x_xj-1)/2);
+    else rightbr((x_xj-1)/2);
     return;
 }
 
-//ï¿½ï¿½ï¿½ï¿½VO
+//Êä³öVO
 void printvo()
 {
     int i=0;
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â½ï¿½
-    printf("ï¿½ï¿½ï¿½Â½ï¿½Îª:%d %d",xj,sj);
+    //Êä³öÉÏÏÂ½ç
+	printf("\nÉÏÏÂ½çÎª:%d %d\n",tr[xj].data,tr[sj].data);
+	//Ìî³ävonode
+	vonode.vd[vonode.nowcount].data=xj;    
+	vonode.vd[vonode.nowcount].data_hash=tr[xj].data_hash;
+	vonode.nowcount++;
+	vonode.vd[vonode.nowcount].data=sj;    
+	vonode.vd[vonode.nowcount].data_hash=tr[sj].data_hash;
+	vonode.nowcount++;
 
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½
-    printf("ï¿½ï¿½Â·ï¿½ï¿½Îª:\n");
+    //Êä³ö×óÓÒÂ·¾¶
+    printf("×óÂ·¾¶Îª:\n");
     for(i=0;i<lpath.nowcount;i++)
     {
-        printf("%d.%d %s\n",i,lpath.index[i],lpath.data_hash[i].c_str());
+        printf("%d.%d %s\n",i+1,lpath.index[i],lpath.data_hash[i].c_str());
     }
-    printf("ï¿½ï¿½Â·ï¿½ï¿½Îª:\n");
+    printf("ÓÒÂ·¾¶Îª:\n");
     for(i=0;i<rpath.nowcount;i++)
     {
-        printf("%d.%d %s\n",i,rpath.index[i],rpath.data_hash[i].c_str());
+        printf("%d.%d %s\n",i+1,rpath.index[i],rpath.data_hash[i].c_str());
     }
 }
 
-//ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½
+//²éÑ¯²Ù×÷
 void findnode()
 {
-    int up,down; //ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý½ï¿½ï¿½ï¿½
-    printf("ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½Ñ¯ï¿½Ä·ï¿½Î§:\n");
+    int up,down; //²éÑ¯ÉÏÏÂÏÞ
+
+	//³õÊ¼»¯VO½á¹û
+	vonode.nowcount=0;
+
+    //Êä³öÊý¾Ý½á¹û
+    printf("ÊäÈëÒª²éÑ¯µÄ·¶Î§:\n");
     scanf("%d%d",&down,&up);
     print(down,up);
 
-    //ï¿½ï¿½ï¿½ï¿½VO
+    //Êä³öVO
 
-    //ï¿½ï¿½Ê¼ï¿½ï¿½Â·ï¿½ï¿½
+    //³õÊ¼»¯Â·¾¶
     lpath.nowcount=0;
     rpath.nowcount=0;
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½
+    //Çó³ö×óÓÒÂ·¾¶
     leftbr(xj);
     rightbr(sj);
 
-    //ï¿½ï¿½ï¿½ï¿½VO
+    //Êä³öVO
     printvo();
+}
+
+//ÖØ½¨º¯Êý
+//¸ù¾ÝÒÑÖª²éÑ¯½á¹ûµÄhashÖµ¡¢±ß½çhashÖµÒÔ¼°Â·¾¶hashÖµÖØ¹¹³öNODEµÄhashÖµ
+string reconstructor(int needpath)
+{
+	for(int i=0;i<vonode.nowcount;i++)
+		if(needpath==vonode.vd[i].data)
+			return vonode.vd[i].data_hash;
+
+	string temp=reconstructor(needpath*2)+reconstructor((needpath*2)+1);
+
+	int n=APHash(temp);
+	char re[100];
+	itoa(n,re,10);
+	temp=re;
+	return temp;
 }
 
 int main(void)
 {
-    //ï¿½ï¿½ï¿½ï¿½Ô­Ê¼ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    //ÊäÈëÔ­Ê¼Êý¾Ý²¢½øÐÐÅÅÐò
 	int original[100];
 
 	scanf("%d",&num);
@@ -189,26 +260,32 @@ int main(void)
         scanf("%d",&original[i]);
     qsort(original,num,sizeof(original[0]),comp);
 
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½Ò¶ï¿½Ó½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    //¹¹½¨ÓÐN¸öÒ¶×Ó½ÚµãµÄÂú¶þ²æÊ÷
 
-    //Ò¶ï¿½Ó½Úµï¿½
+    //Ò¶×Ó½Úµã
     for(int i=num;i<num*2;i++)
     {
         tr[i].data=original[i-num];
         tr[i].data_hash=hashdata(tr[i].data);
     }
-    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    //Ìî³ä¶þ²æÊ÷
     crtree(num/2);
 
     int a;
     do
     {
-        printf("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÒªÖ´ï¿½ÐµÄ²ï¿½ï¿½ï¿½ï¿½ï¿½\n");
-        printf("0ï¿½ï¿½ï¿½Ë³ï¿½\n");
-        printf("1ï¿½ï¿½ï¿½ï¿½Ñ¯\n");
+        printf("ÇëÊäÈëÄãÒªÖ´ÐÐµÄ²Ù×÷£º\n");
+        printf("0¡¢ÍË³ö\n");
+        printf("1¡¢²éÑ¯\n");
+		printf("2¡¢ÖØ½¨\n");
         scanf("%d",&a);
         if(a==1)
             findnode();
+		if(a==2)
+		{
+			string temp=reconstructor(NODE);
+			printf("Ç©Ãû½ÚµãhashÖµÎª£º%s\n",temp.c_str());
+		}
     }while(a!=0);
     return 0;
 }
